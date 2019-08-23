@@ -77,31 +77,80 @@ ninf=-float('inf')
 mask2=torch.tensor([[1,1,ninf,ninf,ninf,ninf],[ninf,ninf,1,ninf,ninf,ninf],[1,1,1,1,ninf,ninf]])
 nlarge=-1000
 mask3=torch.tensor([[1,1,nlarge,nlarge,nlarge,nlarge],[nlarge,nlarge,1,nlarge,nlarge,nlarge],[1,1,1,1,nlarge,nlarge]])
+nlarge=-9
+mask4=torch.tensor([[1,1,nlarge,nlarge,nlarge,nlarge],[nlarge,nlarge,1,nlarge,nlarge,nlarge],[1,1,1,1,nlarge,nlarge]])
+nlarge=-1
+mask5=torch.tensor([[1,1,nlarge,nlarge,nlarge,nlarge],[nlarge,nlarge,1,nlarge,nlarge,nlarge],[1,1,1,1,nlarge,nlarge]])
 #input=torch.rand([batchsize,dim1], requires_grad = True)
 input=torch.tensor([[0.1334, 0.4332, 0.9542, 0.0585, 0.7362, 0.9372],[0.1247, 0.2000, 0.6954, 0.4101, 0.0087, 0.5814],[0.5126, 0.5473, 0.4716, 0.9520, 0.7300, 0.0541]], requires_grad = True)
-
 training_steps = 100
-for i in range(training_steps):
-    cur_generator = generator
-    #cur_generator = masked_generator
-    output=cur_generator(input)
-    #output=cur_generator(input, mask0)
-    #output=cur_generator(input, mask1)
-    #output=cur_generator(input, mask2)
-    #output=cur_generator(input, mask3)
-    print("target.shape:", target.shape)
-    print("output.shape:", output.shape)
-    print("input.shape:", input.shape)
-    print("target:", target)
-    print("input:", input)
-    print("output:", output)
 
-    loss_value = loss_normal(output,target)
-    #loss_value = F.nll_loss(output,target)
-    print("loss_normal(output,target):", loss_value)
+def train_cross_entropy():
+    for i in range(training_steps):
+        cur_generator = generator
+        #cur_generator = masked_generator
+        #output=cur_generator(input)
+        #output=cur_generator(input, mask0)
+        #output=cur_generator(input, mask1)
+        #output=cur_generator(input, mask2)
+        #output=cur_generator(input, mask3)
+        print("target.shape:", target.shape)
+        print("output.shape:", output.shape)
+        print("input.shape:", input.shape)
+        print("target:", target)
+        print("input:", input)
+        print("output:", output)
 
-    loss_value.backward()
-    optimizer = optim.SGD(cur_generator.parameters(), lr=0.1)
-    optimizer.step()
-    print("output after backward:", output)
-    print("input after backward:", input)
+        #loss_value = loss_normal(output,target)
+        loss_value = F.nll_loss(output,target)
+        print("loss_normal(output,target):", loss_value)
+
+        loss_value.backward()
+        optimizer = optim.SGD(cur_generator.parameters(), lr=0.1)
+        optimizer.step()
+        print("output after backward:", output)
+        print("input after backward:", input)
+
+def train_nll_loss():
+    for i in range(training_steps):
+        cur_generator = generator
+        #cur_generator = masked_generator
+        output=cur_generator(input)
+        #output=cur_generator(input, mask0)
+        #output=cur_generator(input, mask1)
+        #output=cur_generator(input, mask2)
+        #output=cur_generator(input, mask3)
+        print("target.shape:", target.shape)
+        print("output.shape:", output.shape)
+        print("input.shape:", input.shape)
+        print("target:", target)
+        print("input:", input)
+        print("output:", output)
+
+        #loss_value = loss_normal(output,target)
+        output_s = F.softmax(output, dim=1)
+        output_l = torch.log(output_s)
+        print("output_s:", output_s)
+        print("output_l:", output_l)
+        #output_m = output_l * mask1.float()
+        #output_m = output_l * mask2.float()
+        #output_m = output_l * mask3.float()
+        #output_m = output_l * mask4.float()
+        output_m = output_l * mask5.float()
+        loss_value = F.nll_loss(output_m,target)
+        print("output_m:", output_m)
+        print("loss_normal(output,target):", loss_value)
+
+        loss_value.backward()
+        optimizer = optim.SGD(cur_generator.parameters(), lr=0.1)
+        optimizer.step()
+        print("output after backward:", output)
+        print("input after backward:", input)
+
+
+
+def main():
+    # train_cross_entropy()
+    train_nll_loss()
+
+main()
